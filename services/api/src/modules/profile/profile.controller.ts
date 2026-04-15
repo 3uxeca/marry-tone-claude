@@ -1,18 +1,31 @@
-import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpCode,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
 import { ProfileService } from './profile.service'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
+@UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get('diagnosis-gate')
-  getDiagnosisGate() {
-    return this.profileService.getDiagnosisGate('stub-user-id')
+  getDiagnosisGate(@Req() req: any) {
+    return this.profileService.getDiagnosisGate(req.user.id)
   }
 
   @Post('diagnosis-gate')
-  @HttpCode(HttpStatus.OK)
-  setDiagnosisGate(@Body() body: unknown) {
-    return this.profileService.setDiagnosisGate('stub-user-id', body)
+  @HttpCode(201)
+  upsertDiagnosisGate(
+    @Req() req: any,
+    @Body() body: { experience: string; weddingRole: string },
+  ) {
+    return this.profileService.upsertDiagnosisGate(req.user.id, body)
   }
 }

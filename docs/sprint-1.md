@@ -47,8 +47,8 @@ Phase 1 개발 전체의 **기반 레일**을 깐다. 이후 모든 스프린트
 | T9 | ~~Docker Compose (web/api/ml/mysql/redis)~~ ✅ | planner | M | T4, T6, T8 |
 | T10 | ~~공통 인증 모듈 (이메일 로그인, 세션 쿠키, `/api/me`)~~ ✅ | backend-engineer | L | T6, T7 |
 | T11 | ~~진단 게이트 DTO 확정 (`packages/contracts/diagnosis-gate.ts`)~~ ✅ | backend-engineer + frontend-engineer | S | T3 |
-| T12 | 진단 게이트 API (`POST /profile/diagnosis-gate`, `GET /profile/diagnosis-gate`) | backend-engineer | M | T7, T11 |
-| T13 | 진단 게이트 UI (경험자/비경험자 분기 화면) | ui-designer + frontend-engineer | M | T5, T11 |
+| T12 | ~~진단 게이트 API (`POST /profile/diagnosis-gate`, `GET /profile/diagnosis-gate`)~~ ✅ | backend-engineer | M | T7, T11 |
+| T13 | ~~진단 게이트 UI (경험자/비경험자 분기 화면)~~ ✅ | ui-designer + frontend-engineer | M | T5, T11 |
 | T14 | 진단 게이트 FE↔BE 연결 + TanStack Query 훅 | frontend-engineer | M | T12, T13 |
 | T15 | E2E 테스트 (Playwright): 로그인 → 게이트 → 분기 라우팅 | qa-engineer | M | T10, T14 |
 | T16 | CI 파이프라인 (lint / typecheck / unit / e2e-smoke) | qa-engineer | M | T9 |
