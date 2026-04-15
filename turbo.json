@@ -11,6 +11,14 @@
     },
     "lint": {
       "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "e2e": {
+      "dependsOn": ["^build"],
+      "cache": false
     }
   }
 }
