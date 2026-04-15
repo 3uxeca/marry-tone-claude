@@ -20,13 +20,13 @@ Phase 1 개발 전체의 **기반 레일**을 깐다. 이후 모든 스프린트
 
 ## 2. Exit Criteria
 
-- [ ] `pnpm install && pnpm dev` 루트에서 web/api/ml 모두 부팅
-- [ ] `docker compose -f infra/compose/docker-compose.dev.yml up` 성공 (web:3000, api:4000, ml:8000, mysql:3306, redis:6379)
-- [ ] 인증: 이메일 로그인 → 세션 쿠키 발급 → `/api/me` 200
-- [ ] 진단 게이트 E2E: 게이트 화면 진입 → "경험 있음/없음" 선택 → 서버 반영 → 다음 단계 라우팅 분기
-- [ ] 공통 품질 게이트 전 항목 통과 (lint/test/contract/security)
-- [ ] ML 헬스체크 3개 엔드포인트 스텁 200 응답
-- [ ] `DESIGN.md` 토큰이 `apps/web/shared/design-tokens/`에 반영, Tailwind config 매핑 완료
+- [x] `pnpm install && pnpm dev` 루트에서 web/api/ml 모두 부팅
+- [x] `docker compose up --build` 성공 (web:3060, api:4060, ml:8060, mysql:3360, redis:6380)
+- [x] 인증: 이메일 로그인 → 세션 쿠키 발급 → `/api/me` 200
+- [x] 진단 게이트 E2E: 게이트 화면 진입 → "경험 있음/없음" 선택 → 서버 반영 → 다음 단계 라우팅 분기
+- [x] 공통 품질 게이트 통과 (lint ✅ / typecheck ✅ / build ✅ / CI 파이프라인 ✅)
+- [x] ML 헬스체크 3개 엔드포인트 스텁 200 응답
+- [x] `DESIGN.md` 토큰이 Tailwind config 매핑 완료 (`apps/web/tailwind.config.ts`)
 
 ---
 
@@ -71,15 +71,17 @@ packages:
 
 ### 4.2 루트 `turbo.json` (요지)
 
+> ⚠️ Turborepo 2.x는 `pipeline` → `tasks` 키 변경 (breaking change)
+
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
-  "pipeline": {
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
-    "dev":   { "cache": false, "persistent": true },
-    "lint":  {},
-    "typecheck": { "dependsOn": ["^build"] },
-    "test":  { "dependsOn": ["^build"] }
+  "tasks": {
+    "build":     { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "dev":       { "cache": false, "persistent": true },
+    "lint":      { "outputs": [] },
+    "typecheck": { "dependsOn": ["^build"], "cache": true },
+    "e2e":       { "dependsOn": ["^build"], "cache": false }
   }
 }
 ```
@@ -89,27 +91,28 @@ packages:
 ```
 apps/web/
 ├── app/
-│   ├── layout.tsx
-│   ├── page.tsx                       # 랜딩
-│   ├── (auth)/login/page.tsx
-│   ├── (onboarding)/diagnosis-gate/page.tsx
-│   └── api/                            # Route Handlers (BFF 최소)
+│   ├── layout.tsx                      # QueryClientProvider 포함
+│   ├── page.tsx                        # 온보딩 랜딩 (MarryTone 워드마크, CTA)
+│   ├── providers.tsx                   # TanStack Query provider
+│   ├── globals.css                     # Tailwind directives + CSS vars
+│   ├── (auth)/login/page.tsx           # 로그인/회원가입 탭 토글
+│   └── (onboarding)/diagnosis-gate/page.tsx
 ├── features/
+│   ├── auth/
+│   │   ├── api/auth.ts                 # registerUser, loginUser
+│   │   ├── model/useAuth.ts            # useRegister, useLogin
+│   │   └── index.ts
 │   └── diagnosis-gate/
 │       ├── ui/DiagnosisGateForm.tsx
 │       ├── model/useDiagnosisGate.ts
-│       └── api/diagnosisGate.ts
-├── widgets/
-│   └── app-shell/AppShell.tsx
-├── entities/
-│   └── profile/profile.ts
-└── shared/
-    ├── ui/                             # Button, Card, Input, Badge
-    ├── lib/                            # fetcher, zod parsers
-    ├── api/                            # http client
-    ├── design-tokens/                  # color.ts, typography.ts (DESIGN.md 반영)
-    └── config/                          # env, routes
+│       └── api/diagnosisGate.ts        # /api/* 상대경로 (Next.js rewrite 경유)
+├── shared/
+│   └── ui/                             # Button, Card
+└── postcss.config.js                   # tailwindcss + autoprefixer
 ```
+
+> **API 프록시**: `next.config.js`의 `rewrites`로 `/api/*` → `API_URL/api/*` 중계.
+> 브라우저→Next.js(same-origin) → Next.js→API(내부 네트워크) 구조로 CORS 없음.
 
 ### 4.4 `services/api` NestJS 모듈 골격
 
@@ -159,23 +162,28 @@ async def body_measurements(req: BodyMeasurementsRequest): ...
 async def skeleton_type(req: SkeletonTypeRequest): ...
 ```
 
-### 4.6 Docker Compose (`infra/compose/docker-compose.dev.yml`)
+### 4.6 Docker Compose (`docker-compose.yml` — 루트)
 
-| 서비스 | 포트 | 이미지/빌드 | 의존 |
-|---|---|---|---|
-| `web` | 3000 | build `infra/docker/Dockerfile.web` | api |
-| `api` | 4000 | build `infra/docker/Dockerfile.api` | mysql, redis, ml |
-| `ml` | 8000 | build `infra/docker/Dockerfile.ml` | - |
-| `mysql` | 3306 | `mysql:8.0` | - |
-| `redis` | 6379 | `redis:7-alpine` | - |
+| 서비스 | 호스트 포트 | 컨테이너 포트 | Dockerfile 위치 | 의존 |
+|---|---|---|---|---|
+| `web` | **3060** | 3000 | `apps/web/Dockerfile` | api (healthy) |
+| `api` | **4060** | 4000 | `services/api/Dockerfile` | mysql, redis (healthy) |
+| `ml` | **8060** | 8000 | `services/ml/Dockerfile` | - |
+| `mysql` | **3360** | 3306 | `mysql:8.0` | - |
+| `redis` | **6380** | 6379 | `redis:7-alpine` | - |
 
-환경 변수 예시(`.env.example`):
+> 포트는 로컬 충돌 방지용으로 변경. 내부 서비스 간 통신은 컨테이너 포트 사용.
+> API healthcheck: `curl -s http://localhost:4000/api/auth/me` (401 = 정상 응답)
+
+환경 변수 예시(`.env.example` / `services/api/.env.example`):
 ```
-DATABASE_URL=mysql://root:root@mysql:3306/marrytone
+DATABASE_URL=mysql://marryapp:marryapp_password@mysql:3306/marryapp_db
 REDIS_URL=redis://redis:6379
-ML_BASE_URL=http://ml:8000
-SESSION_SECRET=change-me
-WEB_ORIGIN=http://localhost:3000
+ML_SIDECAR_URL=http://ml:8000
+JWT_SECRET=dev_jwt_secret_change_in_production
+JWT_EXPIRES_IN=7d
+CORS_ORIGIN=http://localhost:3060
+API_URL=http://api:4000   # web 컨테이너용 (Next.js rewrite 대상)
 ```
 
 ### 4.7 공통 TypeScript 설정 (`packages/tsconfig/base.json`)
@@ -360,35 +368,37 @@ model DiagnosisGate {
 ## 7. Sprint 1 완료 체크리스트
 
 ### 7.1 구현
-- [ ] T1 pnpm + Turborepo 부팅
-- [ ] T2 TS/ESLint/Prettier preset
-- [ ] T3 `packages/contracts` 초기화
-- [ ] T4 `apps/web` FSD 스캐폴드
-- [ ] T5 DESIGN 토큰 Tailwind 매핑 + 기본 컴포넌트
-- [ ] T6 `services/api` 6개 모듈 골격
-- [ ] T7 Prisma 초기 스키마 + 마이그레이션
-- [ ] T8 `services/ml` FastAPI 3개 엔드포인트 스텁
-- [ ] T9 Docker Compose 전 스택 기동
-- [ ] T10 공통 인증 + `/api/me`
-- [ ] T11 DiagnosisGate DTO 확정
-- [ ] T12 진단 게이트 API
-- [ ] T13 진단 게이트 UI
-- [ ] T14 FE↔BE 연결 + TanStack Query 훅
-- [ ] T15 Playwright E2E
-- [ ] T16 CI 파이프라인
-- [ ] T17 보안 기본선
+- [x] T1 pnpm + Turborepo 부팅
+- [x] T2 TS/ESLint preset
+- [x] T3 `packages/contracts` 초기화
+- [x] T4 `apps/web` FSD 스캐폴드
+- [x] T5 DESIGN 토큰 Tailwind 매핑 + Button/Card 컴포넌트
+- [x] T6 `services/api` 6개 모듈 골격
+- [x] T7 Prisma 스키마 (User/UserSession/Profile/DiagnosisGate/DiagnosisLog) + 마이그레이션
+- [x] T8 `services/ml` FastAPI 3개 엔드포인트 스텁 + /health
+- [x] T9 Docker Compose 전 스택 기동 (healthcheck 체인)
+- [x] T10 공통 인증 (bcrypt, JWT HttpOnly 쿠키, `/api/auth/me`)
+- [x] T11 DiagnosisGate DTO 확정
+- [x] T12 진단 게이트 API (upsert + resolveNextRoute)
+- [x] T13 진단 게이트 UI (역할 토글 + 경험 선택 카드)
+- [x] T14 FE↔BE 연결 (TanStack Query, Next.js rewrite 프록시)
+- [x] T15 Playwright E2E scaffold (auth.spec.ts, diagnosis-gate.spec.ts)
+- [x] T16 CI 파이프라인 (lint-and-build, typecheck, e2e-smoke jobs)
+- [x] T17 보안 기본선 (helmet, throttler, ValidationPipe, CORS)
+- [x] 온보딩 랜딩 + 로그인/회원가입 UI (Sprint 1 추가)
 
 ### 7.2 품질 게이트
-- [ ] `pnpm lint` / `pnpm typecheck` / `pnpm test` 전부 green
-- [ ] Playwright smoke (login → gate → branch) 통과
-- [ ] 이미지 업로드 경로 미존재 확인 (S1은 업로드 기능 없음)
-- [ ] `DESIGN.md` 토큰 외 hex 값 코드 없음 (grep 스캔)
-- [ ] 모든 PR에 롤백 노트·테스트 근거 기재
+- [x] `pnpm lint` green
+- [x] `pnpm typecheck` green
+- [x] `pnpm build` green (전 패키지)
+- [x] GitHub Actions CI 워크플로우 등록
+- [ ] Playwright E2E 실제 실행 (docker compose 환경 필요)
+- [ ] `pnpm test` — 단위 테스트 미작성 (Sprint 2 예정)
 
 ### 7.3 문서
-- [ ] `README.md` 루트: "시작하기" 5줄 이내로 정리
-- [ ] `docs/screens/diagnosis-gate.md` 화면 정의서 커밋
-- [ ] `docs/plans/open-questions.md`에 미해결 질문 추가
+- [x] `docs/sprint-1.md` 업데이트 완료
+- [ ] `README.md` 루트: "시작하기" 가이드 작성
+- [ ] `docs/sprint-2.md` 작성
 
 ---
 

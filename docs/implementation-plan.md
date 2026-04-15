@@ -32,32 +32,35 @@
 ```
 marry-tone-claude/
 ├── apps/
-│   └── web/                   # Next.js 14 (App Router + FSD)
-│       ├── app/               # 라우팅 엔트리
-│       ├── features/          # 사용 사례 단위 (diagnosis-gate, recommendation-feed, ...)
-│       ├── widgets/           # 합성 UI 블록
-│       ├── entities/          # 도메인 모델 바인딩
-│       └── shared/            # ui/, lib/, api/, config/, design-tokens/
+│   ├── web/                   # Next.js 14 (App Router + FSD)
+│   │   ├── app/               # 라우팅 엔트리 (layout, page, providers, globals.css)
+│   │   ├── features/          # auth/, diagnosis-gate/
+│   │   ├── shared/            # ui/ (Button, Card)
+│   │   ├── Dockerfile         # 3-stage: deps→builder→runner (next start)
+│   │   ├── tailwind.config.ts
+│   │   ├── postcss.config.js
+│   │   └── next.config.js     # rewrites: /api/* → API_URL (CORS 우회)
+│   └── web-e2e/               # Playwright E2E 테스트
+│       └── tests/             # auth.spec.ts, diagnosis-gate.spec.ts
 ├── services/
 │   ├── api/                   # NestJS + Fastify
 │   │   ├── src/modules/       # auth, profile, recommendation, wardrobe, couple, admin
-│   │   ├── src/common/        # guards, filters, interceptors
-│   │   └── prisma/            # schema.prisma, migrations
+│   │   ├── src/common/        # guards, filters, interceptors, services (Prisma)
+│   │   ├── prisma/            # schema.prisma, migrations/
+│   │   └── Dockerfile         # 3-stage: deps→builder→runner (prisma generate 포함)
 │   └── ml/                    # Python FastAPI sidecar
 │       ├── app/
-│       │   ├── routers/       # diagnosis/*.py
-│       │   ├── core/          # image, color, landmark 유틸
+│       │   ├── routers/       # diagnosis.py
 │       │   └── schemas/       # pydantic DTO
-│       └── tests/
+│       └── Dockerfile         # python:3.11-slim + curl
 ├── packages/
-│   ├── contracts/             # 공유 DTO (Zod + OpenAPI 생성)
+│   ├── contracts/             # 공유 DTO (Zod)
 │   ├── tsconfig/              # 공통 tsconfig preset
 │   └── eslint-config/         # 공통 lint 규칙
 ├── docs/                      # 기획·설계 문서
-├── infra/
-│   ├── docker/                # Dockerfile.web, Dockerfile.api, Dockerfile.ml
-│   └── compose/               # docker-compose.dev.yml
-├── turbo.json
+├── .github/workflows/ci.yml   # lint-and-build → typecheck → e2e-smoke
+├── docker-compose.yml         # 루트 (포트: web:3060, api:4060, ml:8060)
+└── turbo.json                 # tasks: build, dev, lint, typecheck, e2e
 ├── pnpm-workspace.yaml
 └── package.json
 ```
