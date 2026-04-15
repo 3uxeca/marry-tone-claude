@@ -45,7 +45,7 @@ Phase 1 개발 전체의 **기반 레일**을 깐다. 이후 모든 스프린트
 | T7 | ~~`services/api` Prisma 초기 스키마 (User, Profile, DiagnosisGate) + 초기 마이그레이션~~ ✅ | database-engineer | M | T6 |
 | T8 | ~~`services/ml` FastAPI 스캐폴드 + 3개 엔드포인트 스텁 (`/diagnosis/personal-color`, `/diagnosis/body-measurements`, `/diagnosis/skeleton-type`)~~ ✅ | ml-inference-engineer | M | T3 |
 | T9 | ~~Docker Compose (web/api/ml/mysql/redis)~~ ✅ | planner | M | T4, T6, T8 |
-| T10 | 공통 인증 모듈 (이메일 로그인, 세션 쿠키, `/api/me`) | backend-engineer | L | T6, T7 |
+| T10 | ~~공통 인증 모듈 (이메일 로그인, 세션 쿠키, `/api/me`)~~ ✅ | backend-engineer | L | T6, T7 |
 | T11 | ~~진단 게이트 DTO 확정 (`packages/contracts/diagnosis-gate.ts`)~~ ✅ | backend-engineer + frontend-engineer | S | T3 |
 | T12 | 진단 게이트 API (`POST /profile/diagnosis-gate`, `GET /profile/diagnosis-gate`) | backend-engineer | M | T7, T11 |
 | T13 | 진단 게이트 UI (경험자/비경험자 분기 화면) | ui-designer + frontend-engineer | M | T5, T11 |

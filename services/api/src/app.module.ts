@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { DatabaseModule } from './common/database/database.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { ProfileModule } from './modules/profile/profile.module'
 import { RecommendationModule } from './modules/recommendation/recommendation.module'
@@ -8,6 +9,7 @@ import { AdminModule } from './modules/admin/admin.module'
 
 @Module({
   imports: [
+    DatabaseModule,
     AuthModule,
     ProfileModule,
     RecommendationModule,
