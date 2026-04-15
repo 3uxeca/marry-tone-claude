@@ -2,21 +2,20 @@
 
 import { useRouter } from 'next/navigation'
 import { DiagnosisGateForm } from '@/features/diagnosis-gate/ui/DiagnosisGateForm'
-
-type Experience = 'EXPERIENCED' | 'NOT_EXPERIENCED' | 'UNSURE'
-type WeddingRole = 'BRIDE' | 'GROOM'
-
-const EXPERIENCE_ROUTES: Record<Experience, string> = {
-  EXPERIENCED: '/diagnosis/manual',
-  NOT_EXPERIENCED: '/diagnosis/photo',
-  UNSURE: '/diagnosis/survey',
-}
+import { useDiagnosisGateMutation } from '@/features/diagnosis-gate/model/useDiagnosisGate'
+import type { DiagnosisExperience, UserRole } from '@/features/diagnosis-gate/api/diagnosisGate'
 
 export default function DiagnosisGatePage() {
   const router = useRouter()
+  const mutation = useDiagnosisGateMutation()
 
-  function handleSubmit(experience: Experience, _weddingRole: WeddingRole) {
-    router.push(EXPERIENCE_ROUTES[experience])
+  function handleSubmit(experience: DiagnosisExperience, role: UserRole) {
+    mutation.mutate(
+      { experience, role },
+      {
+        onSuccess: (data) => router.push(data.nextRoute),
+      },
+    )
   }
 
   return (
@@ -37,7 +36,7 @@ export default function DiagnosisGatePage() {
           </p>
         </div>
 
-        <DiagnosisGateForm onSubmit={handleSubmit} />
+        <DiagnosisGateForm onSubmit={handleSubmit} isLoading={mutation.isPending} />
       </div>
     </main>
   )

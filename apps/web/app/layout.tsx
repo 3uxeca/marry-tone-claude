@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Providers } from './providers'
 
 export const metadata: Metadata = {
   title: 'MarryTone',
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-page font-sans text-stone-900 antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
