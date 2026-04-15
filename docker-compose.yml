@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     networks: [marrynet]
     ports:
-      - '3306:3306'
+      - '3360:3306'
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: marryapp_db
@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
     networks: [marrynet]
     ports:
-      - '6379:6379'
+      - '6380:6379'
     volumes:
       - redis_data:/data
     command: redis-server --save 20 1 --loglevel warning
@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
     networks: [marrynet]
     ports:
-      - '8000:8000'
+      - '8060:8000'
     environment:
       - PYTHONUNBUFFERED=1
     healthcheck:
@@ -79,13 +79,13 @@ services:
     restart: unless-stopped
     networks: [marrynet]
     ports:
-      - '4000:4000'
+      - '4060:4000'
     environment:
       NODE_ENV: development
       PORT: 4000
       DATABASE_URL: mysql://marryapp:marryapp_password@mysql:3306/marryapp_db
       REDIS_URL: redis://redis:6379
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3060
       ML_SIDECAR_URL: http://ml:8000
       JWT_SECRET: dev_jwt_secret_change_in_production
       JWT_EXPIRES_IN: 7d
@@ -95,7 +95,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:4000/api']
+      test: ['CMD', 'curl', '-s', 'http://localhost:4000/api/auth/me']
       interval: 15s
       timeout: 5s
       retries: 3
@@ -111,10 +111,10 @@ services:
     restart: unless-stopped
     networks: [marrynet]
     ports:
-      - '3000:3000'
+      - '3060:3000'
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      API_URL: http://api:4000
     depends_on:
       api:
         condition: service_healthy

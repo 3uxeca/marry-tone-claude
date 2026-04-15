@@ -6,7 +6,9 @@ import type {
 export type { CreateDiagnosisGateRequest, DiagnosisGateResponse }
 export type { DiagnosisExperience, UserRole } from '@marry-tone/contracts'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api'
+// Next.js rewrites /api/* → API server (see next.config.js)
+// 상대 경로 사용으로 CORS 없음, 포트 하드코딩 없음
+const API_BASE = '/api'
 
 export async function postDiagnosisGate(
   payload: CreateDiagnosisGateRequest,
