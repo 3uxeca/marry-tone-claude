@@ -1,67 +1,120 @@
 version: '3.9'
 
-services:
-  web:
-    build:
-      context: ./apps/web
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://api:4000
-    depends_on:
-      - api
+networks:
+  marrynet:
+    driver: bridge
 
-  api:
-    build:
-      context: ./services/api
-      dockerfile: Dockerfile
+volumes:
+  mysql_data:
+  redis_data:
+
+services:
+
+  # ─── Infrastructure ───────────────────────────────────────────────────────
+
+  mysql:
+    image: mysql:8.0
+    container_name: marry-mysql
+    restart: unless-stopped
+    networks: [marrynet]
     ports:
-      - '4000:4000'
+      - '3306:3306'
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=mysql://marry_tone:marry_tone_pw@mysql:3306/marry_tone
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: marryapp_db
+      MYSQL_USER: marryapp
+      MYSQL_PASSWORD: marryapp_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'marryapp', '-pmarryapp_password']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: marry-redis
+    restart: unless-stopped
+    networks: [marrynet]
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 20 1 --loglevel warning
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ─── ML Sidecar ──────────────────────────────────────────────────────────
 
   ml:
     build:
       context: ./services/ml
       dockerfile: Dockerfile
+    container_name: marry-ml
+    restart: unless-stopped
+    networks: [marrynet]
     ports:
       - '8000:8000'
     environment:
       - PYTHONUNBUFFERED=1
-
-  mysql:
-    image: mysql:8.0
-    ports:
-      - '3306:3306'
-    environment:
-      MYSQL_ROOT_PASSWORD: root_pw
-      MYSQL_DATABASE: marry_tone
-      MYSQL_USER: marry_tone
-      MYSQL_PASSWORD: marry_tone_pw
-    volumes:
-      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      interval: 10s
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 15s
       timeout: 5s
-      retries: 5
+      retries: 3
+      start_period: 20s
 
-  redis:
-    image: redis:7-alpine
+  # ─── Backend API ─────────────────────────────────────────────────────────
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    container_name: marry-api
+    restart: unless-stopped
+    networks: [marrynet]
     ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
+      - '4000:4000'
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: mysql://marryapp:marryapp_password@mysql:3306/marryapp_db
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: http://localhost:3000
+      ML_SIDECAR_URL: http://ml:8000
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      JWT_EXPIRES_IN: 7d
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4000/api']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
-volumes:
-  mysql_data:
-  redis_data:
+  # ─── Frontend Web ────────────────────────────────────────────────────────
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: marry-web
+    restart: unless-stopped
+    networks: [marrynet]
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+    depends_on:
+      api:
+        condition: service_healthy
