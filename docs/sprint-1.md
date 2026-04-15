@@ -39,11 +39,11 @@ Phase 1 개발 전체의 **기반 레일**을 깐다. 이후 모든 스프린트
 | T1 | ~~pnpm workspace + Turborepo 루트 셋업~~ ✅ | planner | S | - |
 | T2 | ~~공통 TypeScript/ESLint/Prettier preset (`packages/tsconfig`, `packages/eslint-config`)~~ ✅ | frontend-engineer | S | T1 |
 | T3 | ~~`packages/contracts` 초기화 (Zod + diagnosis-gate/auth DTO)~~ ✅ | backend-engineer | M | T1 |
-| T4 | `apps/web` Next.js 14 App Router + FSD 디렉토리 스캐폴드 | frontend-engineer | M | T2 |
-| T5 | `apps/web` DESIGN 토큰 → Tailwind theme 매핑, 기본 Button/Card/Input | ui-designer | M | T4 |
-| T6 | `services/api` NestJS + Fastify 스캐폴드, 모듈 골격 (auth/profile/recommendation/wardrobe/couple/admin) | backend-engineer | L | T2, T3 |
+| T4 | ~~`apps/web` Next.js 14 App Router + FSD 디렉토리 스캐폴드~~ ✅ | frontend-engineer | M | T2 |
+| T5 | ~~`apps/web` DESIGN 토큰 → Tailwind theme 매핑, 기본 Button/Card/Input~~ ✅ | ui-designer | M | T4 |
+| T6 | ~~`services/api` NestJS + Fastify 스캐폴드, 모듈 골격 (auth/profile/recommendation/wardrobe/couple/admin)~~ ✅ | backend-engineer | L | T2, T3 |
 | T7 | `services/api` Prisma 초기 스키마 (User, Profile, DiagnosisGate) + 초기 마이그레이션 | database-engineer | M | T6 |
-| T8 | `services/ml` FastAPI 스캐폴드 + 3개 엔드포인트 스텁 (`/diagnosis/personal-color`, `/diagnosis/body-measurements`, `/diagnosis/skeleton-type`) | ml-inference-engineer | M | T3 |
+| T8 | ~~`services/ml` FastAPI 스캐폴드 + 3개 엔드포인트 스텁 (`/diagnosis/personal-color`, `/diagnosis/body-measurements`, `/diagnosis/skeleton-type`)~~ ✅ | ml-inference-engineer | M | T3 |
 | T9 | Docker Compose (web/api/ml/mysql/redis) | planner | M | T4, T6, T8 |
 | T10 | 공통 인증 모듈 (이메일 로그인, 세션 쿠키, `/api/me`) | backend-engineer | L | T6, T7 |
 | T11 | ~~진단 게이트 DTO 확정 (`packages/contracts/diagnosis-gate.ts`)~~ ✅ | backend-engineer + frontend-engineer | S | T3 |

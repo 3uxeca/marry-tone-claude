@@ -11,6 +11,7 @@ apps/web/out/
 dist/
 build/
 *.tsbuildinfo
+.turbo/
 
 # python
 __pycache__/

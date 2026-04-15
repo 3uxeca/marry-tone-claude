@@ -6,24 +6,29 @@
   --bg-page: #fdfbf7;
   --bg-surface: #ffffff;
   --bg-surface-muted: #f5f0e8;
-
   --brand-dark: #292524;
   --brand-cream-100: #faf5ec;
   --brand-cream-200: #f5ead8;
   --brand-cream-400: #e0c99a;
-
   --accent-blush: #f6d0d0;
   --accent-blush-light: #fbe8e8;
   --accent-sage: #c8d9c8;
   --accent-sage-light: #e6ede6;
   --accent-mauve: #c9a9c9;
-
   --text-primary: #1c1917;
   --text-secondary: #78716c;
   --text-muted: #a8a29e;
-  --text-on-dark: #ffffff;
-
-  --state-danger: #dc2626;
-  --state-warning: #d97706;
-  --state-success: #16a34a;
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--brand-cream-400); border-radius: 2px; }
