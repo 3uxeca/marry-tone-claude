@@ -17,6 +17,8 @@
     "rxjs": "^7.8.0"
   },
   "devDependencies": {
+    "@marry-tone/tsconfig": "workspace:*",
+    "@marry-tone/eslint-config": "workspace:*",
     "@nestjs/cli": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

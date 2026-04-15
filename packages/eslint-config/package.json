@@ -1,0 +1,10 @@
+{
+  "name": "@marry-tone/eslint-config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "files": ["*.js"],
+  "peerDependencies": {
+    "eslint": ">=8"
+  }
+}

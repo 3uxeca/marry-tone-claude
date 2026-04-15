@@ -1,0 +1,17 @@
+
+> @marry-tone/web@0.1.0 lint /Users/dasha/Desktop/code/marry-tone-claude/apps/web
+> next lint
+
+/Users/dasha/Desktop/code/marry-tone-claude/node_modules/.pnpm/next@14.2.4_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/lib/typescript/getTypeScriptConfiguration.js:49
+            throw new _fatalerror.FatalError(ts.formatDiagnostic(result.errors[0], formatDiagnosticsHost));
+                  ^
+
+FatalError: error TS6053: File '@marry-tone/tsconfig/nextjs.json' not found.
+
+    at getTypeScriptConfiguration (/Users/dasha/Desktop/code/marry-tone-claude/node_modules/.pnpm/next@14.2.4_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/lib/typescript/getTypeScriptConfiguration.js:49:19)
+    at writeConfigurationDefaults (/Users/dasha/Desktop/code/marry-tone-claude/node_modules/.pnpm/next@14.2.4_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/lib/typescript/writeConfigurationDefaults.js:185:117)
+    at verifyTypeScriptSetup (/Users/dasha/Desktop/code/marry-tone-claude/node_modules/.pnpm/next@14.2.4_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/lib/verify-typescript-setup.js:121:74)
+    at async Module.nextLint (/Users/dasha/Desktop/code/marry-tone-claude/node_modules/.pnpm/next@14.2.4_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/cli/next-lint.js:77:5)
+
+Node.js v22.21.1
+ ELIFECYCLE  Command failed with exit code 1.
